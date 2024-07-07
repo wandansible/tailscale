@@ -1,0 +1,57 @@
+---
+- name: Authenticate with auth key
+  when: tailscale_auth_key != ""
+  block:
+    - name: Create /etc/tailscale/authkey
+      ansible.builtin.copy:
+        content: "{{ tailscale_auth_key }}"
+        dest: "{{ tailscale_config_dir }}/authkey"
+        owner: root
+        group: root
+        mode: u=rw,g=,o=
+      no_log: true
+
+    - name: Run tailscale login with auth key
+      ansible.builtin.command:
+        cmd: >-
+          tailscale login --timeout {{ tailscale_login_timeout }}
+          --auth-key="file:{{ tailscale_config_dir }}/authkey"
+          {{ _tailscale_login_args }}
+      register: _tailscale_login_cmd
+      changed_when: true
+      failed_when: _tailscale_login_cmd.rc != 0
+
+    - name: Remove /etc/tailscale/authkey
+      ansible.builtin.file:
+        path: "{{ tailscale_config_dir }}/authkey"
+        state: absent
+      no_log: true
+
+- name: Authenticate with browser
+  when: tailscale_auth_key == ""
+  block:
+    - name: Generate new auth url
+      when:
+        - _tailscale_state.AuthURL == ""
+      block:
+        - name: Run tailscale login
+          ansible.builtin.command:
+            cmd: >-
+              tailscale login --timeout {{ tailscale_login_timeout }}
+              {{ _tailscale_login_args }}
+          register: _tailscale_login_cmd
+          changed_when: true
+          failed_when: "'To authenticate' not in _tailscale_login_cmd.stderr"
+
+        - name: Get tailscale status
+          ansible.builtin.include_tasks:
+            file: get-status.yml
+
+    - name: Prompt user to authenticate with tailscale in web browser
+      ansible.builtin.pause:
+        prompt: |-
+          To authenticate {{ inventory_hostname }} with tailscale, visit:
+
+              {{ _tailscale_state.AuthURL }}
+
+          Press enter to continue

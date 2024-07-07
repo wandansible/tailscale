@@ -1,0 +1,16 @@
+---
+- name: Get tailscale status
+  ansible.builtin.include_tasks:
+    file: get-status.yml
+
+- name: Set tailscale facts
+  ansible.builtin.set_fact:
+    tailscale_ipv4: "{{ _tailscale_state.TailscaleIPs | ansible.utils.ipv4 }}"
+    tailscale_ipv6: "{{ _tailscale_state.TailscaleIPs | ansible.utils.ipv6 }}"
+    tailscale_fqdn: "{{ _tailscale_state.Self.DNSName.rstrip('.') }}"
+    tailscale_hostname: "{{ _tailscale_state.Self.DNSName | split('.') | first }}"
+    tailscale_domain: "{{ _tailscale_state.MagicDNSSuffix }}"
+
+- name: Unset local variables
+  ansible.builtin.set_fact:
+    _tailscale_state: ""

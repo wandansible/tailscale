@@ -1,0 +1,60 @@
+---
+tailscale_apt_key_fingerprint: "2596A99EAAB33821893C0A79458CA832957F5868"
+tailscale_apt_key_url: >-
+  {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
+     + ansible_distribution | lower + "/" + ansible_distribution_release + ".noarmor.gpg" }}
+tailscale_apt_repo: >-
+  {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
+     + ansible_distribution | lower + " " + ansible_distribution_release + " main" }}
+
+tailscale_version: "stable"
+
+tailscale_packages:
+  - tailscale
+
+tailscale_config_dir: /etc/tailscale
+
+tailscale_tailscaled_port: 41641
+tailscale_tailscaled_flags: >-
+  {{ []
+     + ["-config=" + tailscale_config_dir + "/tailscaled.hujson"]
+     if tailscale_config != {} else [] }}
+
+tailscale_tailscaled_env_vars: []
+
+tailscale_login_timeout: 10s
+
+tailscale_auth_key: ""
+
+tailscale_valid_args:
+  - accept-dns
+  - accept-routes
+  - advertise-connector
+  - advertise-exit-node
+  - advertise-routes
+  - exit-node
+  - exit-node-allow-lan-access
+  - hostname
+  - netfilter-mode
+  - nickname
+  - operator
+  - shields-up
+  - snat-subnet-routes
+  - ssh
+  - stateful-filtering
+tailscale_valid_login_args:
+  - advertise-tags
+  - login-server
+tailscale_valid_set_args:
+  - accept-risk
+  - auto-update
+  - update-check
+  - webclient
+
+tailscale_args: []
+
+tailscale_config: {}
+
+tailscale_serve: []
+
+tailscale_serve_delete_unmanaged: true

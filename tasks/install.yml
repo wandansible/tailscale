@@ -1,0 +1,30 @@
+---
+- name: Create apt keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Add apt signing key
+  ansible.builtin.apt_key:
+    id: "{{ tailscale_apt_key_fingerprint }}"
+    url: "{{ tailscale_apt_key_url }}"
+    keyring: /etc/apt/keyrings/tailscale.gpg
+    state: present
+
+- name: Add apt repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by=/etc/apt/keyrings/tailscale.gpg]
+      {{ tailscale_apt_repo }}
+    filename: tailscale
+    update_cache: true
+    state: present
+
+- name: Install tailscale
+  ansible.builtin.apt:
+    pkg: "{{ tailscale_packages }}"
+    install_recommends: false
+    state: present

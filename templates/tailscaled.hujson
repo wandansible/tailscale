@@ -1,0 +1,4 @@
+// {{ ansible_managed }}
+
+{{ {"Version": "alpha0", "Locked": false}
+   | combine(tailscale_config) | to_nice_json(sort_keys=false) }}

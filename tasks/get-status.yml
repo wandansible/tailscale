@@ -1,0 +1,13 @@
+---
+- name: Get tailscale status
+  ansible.builtin.command:
+    cmd: "tailscale status --peers=false --json"
+  register: _tailscale_status_cmd
+  retries: 10
+  delay: 1
+  until: (_tailscale_status_cmd.stdout | from_json).BackendState != "NoState"
+  changed_when: false
+
+- name: Set tailscale status fact
+  ansible.builtin.set_fact:
+    _tailscale_state: "{{ _tailscale_status_cmd.stdout | from_json }}"

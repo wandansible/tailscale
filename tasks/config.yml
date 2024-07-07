@@ -1,0 +1,63 @@
+---
+- name: Create /etc/tailscale
+  ansible.builtin.file:
+    path: "{{ tailscale_config_dir }}"
+    owner: "root"
+    group: "root"
+    mode: "u=rwx,g=,o="
+    state: "directory"
+
+- name: Configure tailscaled
+  ansible.builtin.template:
+    src: "tailscaled.hujson"
+    dest: "{{ tailscale_config_dir }}/tailscaled.hujson"
+    owner: "root"
+    group: "root"
+    mode: "u=rw,g=,o="
+  no_log: true
+  register: _configure_tailscaled
+  when: tailscale_config != {}
+
+- name: Restart tailscaled when config changes
+  ansible.builtin.service:
+    name: tailscaled
+    state: restarted
+  when: _configure_tailscaled is changed
+
+- name: Configure /etc/default/tailscaled
+  ansible.builtin.template:
+    src: "default"
+    dest: "/etc/default/tailscaled"
+    owner: "root"
+    group: "root"
+    mode: "u=rw,g=r,o=r"
+  notify: restart tailscaled
+
+- name: Get tailscale status
+  ansible.builtin.include_tasks:
+    file: get-status.yml
+
+- name: Login to tailscale network
+  ansible.builtin.include_tasks:
+    file: auth.yml
+  vars:
+    _tailscale_login_args: |-
+      {% for item in tailscale_args -%}
+        {% if item.option in tailscale_valid_args + tailscale_valid_login_args -%}
+      --{{ item.option }}="{{ item.value }}"{{ " " if not loop.last else "" }}
+        {%- endif %}
+      {%- endfor %}
+  when:
+    - _tailscale_state.BackendState == "NeedsLogin"
+
+- name: Run tailscale set
+  ansible.builtin.command:
+    cmd: "tailscale set {{ _tailscale_set_args }}"
+  vars:
+    _tailscale_set_args: |-
+      {% for item in tailscale_args -%}
+        {% if item.option in tailscale_valid_args + tailscale_valid_set_args -%}
+      --{{ item.option }}="{{ item.value }}"{{ " " if not loop.last else "" }}
+        {%- endif %}
+      {%- endfor %}
+  changed_when: false

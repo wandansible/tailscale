@@ -1,0 +1,60 @@
+---
+- name: Get current tailscale serve instances
+  ansible.builtin.command:
+    cmd: "tailscale serve status --json"
+  register: _tailscale_serve_status_cmd
+  changed_when: false
+
+- name: Set tailscale serve status fact
+  ansible.builtin.set_fact:
+    _tailscale_serve_state: "{{ _tailscale_serve_status_cmd.stdout | from_json }}"
+
+- name: Set tailscale serve port facts
+  ansible.builtin.set_fact:
+    _tailscale_serve_active_ports: "{{ _tailscale_serve_state.TCP | list }}"
+    _tailscale_serve_configured_ports: >-
+      {{ tailscale_serve | map(attribute='from.port') | list | map("string") }}
+
+- name: Delete unmanaged tailscale serve instances
+  ansible.builtin.command:
+    cmd: "tailscale serve --yes --{{ _tailscale_serve_proto }} {{ item }} off"
+  vars:
+    _tailscale_serve_proto: >-
+      {% if "HTTP" in _tailscale_serve_state.TCP[item] -%}
+      http
+      {%- elif "HTTPS" in _tailscale_serve_state.TCP[item] -%}
+      https
+      {%- elif "TerminateTLS" in _tailscale_serve_state.TCP[item] -%}
+      tls-terminated-tcp
+      {%- else -%}
+      tcp
+      {%- endif %}
+  loop: "{{ _tailscale_serve_active_ports | difference(_tailscale_serve_configured_ports) }}"
+  loop_control:
+    label: "{{ _tailscale_serve_proto }}://{{ tailscale_fqdn }}:{{ item }}"
+  changed_when: true
+  when:
+    - tailscale_serve_delete_unmanaged | bool
+    - _tailscale_serve_state.TCP is defined
+
+- name: Create configured tailscale serve instances
+  ansible.builtin.command:
+    cmd: "tailscale {{ _tailscale_serve_cmd }} --yes --bg {{ _tailscale_serve_args }}"
+  vars:
+    _tailscale_serve_cmd: >-
+      {{ "funnel" if item.funnel | bool else "serve" }}
+    _tailscale_serve_from: >-
+      {{ item.from.proto + "://" + tailscale_fqdn + ":" + (item.from.port | string)
+         + (item.from.path | default("/")) }}
+    _tailscale_serve_args: >-
+      {% if item.from.path is defined and item.from.proto.startswith("http") -%}
+      --set-path {{ item.from.path }}
+      {% endif -%}
+      --{{ item.from.proto }} {{ item.from.port }}
+      {{ item.to }}
+  loop: "{{ tailscale_serve }}"
+  loop_control:
+    label: "{{ _tailscale_serve_from }} to {{ item.to }}"
+  changed_when: >-
+    _tailscale_serve_state.TCP is not defined
+    or (item.from.port | string) not in _tailscale_serve_state.TCP
