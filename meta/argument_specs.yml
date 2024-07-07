@@ -1,0 +1,283 @@
+---
+argument_specs:
+  main:
+    short_description: Install and configure tailscale
+    description: |
+      Install, configure and authenticate a tailscale client with a tailscale network.
+    options:
+      tailscale_apt_key_fingerprint:
+        description: Fingerprint for tailscale apt repo GPG key
+        type: str
+        default: "2596A99EAAB33821893C0A79458CA832957F5868"
+
+      tailscale_apt_key_url:
+        description: URL for tailscale apt repo GPG key
+        type: str
+        default: >-
+          {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
+             + ansible_distribution | lower + "/" + ansible_distribution_release + ".noarmor.gpg" }}
+
+      tailscale_apt_repo:
+        description: Entry for tailscale apt repo in sources.list file
+        type: str
+        default: >-
+          {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
+             + ansible_distribution | lower + " " + ansible_distribution_release + " main" }}
+
+      tailscale_version:
+        description: Version of tailscale to install
+        type: str
+        choices:
+          - stable
+          - unstable
+        default: "stable"
+
+      tailscale_packages:
+        description: List of packages to install
+        type: list
+        elements: str
+        default:
+          - tailscale
+
+      tailscale_config_dir:
+        description: Directory for tailscale configuration
+        type: str
+        default: "/etc/tailscale"
+
+      tailscale_tailscaled_port:
+        description: The port tailscaled will listen on for incoming VPN packets
+        type: int
+        default: 41641
+
+      tailscale_tailscaled_flags:
+        description: List of extra flags to pass to tailscaled
+        type: list
+        elements: str
+        default: >-
+          {{ []
+             + ["-config=" + tailscale_config_dir + "/tailscaled.hujson"]
+             if tailscale_config != {} else [] }}
+
+      tailscale_tailscaled_env_vars:
+        description: List of environment variables to pass to tailscaled
+        type: list
+        elements: dict
+        default: []
+        options:
+          name:
+            description: Name of environment variable
+            type: str
+            required: true
+          value:
+            description: Value of environment variable
+            type: str
+            required: true
+
+      tailscale_login_timeout:
+        description: Time to wait for tailscale to generate an authentication URL
+        type: str
+        default: 10s
+
+      tailscale_auth_key:
+        description: |
+          Tailscale authentication key starting with "tskey-auth"
+          or oauth client secret starting with "tskey-client" to use for unattended login
+          to the tailscale network. Or empty string to authenticate manually through a web browser.
+        type: str
+        default: ""
+
+      tailscale_valid_args:
+        description: List of valid arguments for tailscale login and set commands
+        type: list
+        default:
+          - accept-dns
+          - accept-routes
+          - advertise-connector
+          - advertise-exit-node
+          - advertise-routes
+          - exit-node
+          - exit-node-allow-lan-access
+          - hostname
+          - netfilter-mode
+          - nickname
+          - operator
+          - shields-up
+          - snat-subnet-routes
+          - ssh
+          - stateful-filtering
+
+      tailscale_valid_login_args:
+        description: List of valid arguments for tailscale login command only
+        type: list
+        default:
+          - advertise-tags
+          - login-server
+
+      tailscale_valid_set_args:
+        description: List of valid arguments for tailscale set command only
+        type: list
+        default:
+          - accept-risk
+          - auto-update
+          - update-check
+          - webclient
+
+      tailscale_args:
+        description:
+          - List of arguments to provide to tailscale login and set commands
+          - See tailscale documentation for more details https://tailscale.com/kb/1080/cli
+        type: list
+        default: []
+
+      tailscale_config:
+        description: Tailscale configuration file options
+        type: dict
+        default: {}
+        options:
+          Version:
+            description: Tailscale configuration file version
+            type: str
+            default: "alpha0"
+          Locked:
+            description: |
+              If true, the configuration file is locked from being changed by "tailscale set"
+            type: bool
+            default: false
+          ServerURL:
+            description: Tailscale server URL
+            type: str
+            default: "https://controlplane.tailscale.com"
+          AuthKey:
+            description: Tailscale authentication key
+            type: str
+          Enabled:
+            description: If true, tailscaled will start
+            type: bool
+            default: true
+          OperatorUser:
+            description: |
+              Local user name who is allowed to operate tailscaled without being root or using sudo
+            type: str
+          Hostname:
+            description: Hostname to use instead of the one provided by the OS
+            type: str
+          AcceptDNS:
+            description: Accept DNS configuration from the tailscale admin panel
+            type: bool
+          AcceptRoutes:
+            description: Accept routes advertised by other tailscale nodes
+            type: bool
+            default: true
+          ExitNode:
+            description: Tailscale exit node (IP or name) for Internet traffic
+            type: str
+          AllowLANWhileUsingExitNode:
+            description: |
+              Allow direct access to the local network when routing traffic via an exit node
+            type: bool
+          AdvertiseRoutes:
+            description: List of routes to advertise to other nodes
+            type: list
+            elements: str
+          DisableSNAT:
+            description: Disable source NAT for traffic to local advertised routes
+            type: bool
+          NetfilterMode:
+            description: Netfilter mode
+            type: str
+            choices:
+              - "on"
+              - "off"
+              - "nodivert"
+          PostureChecking:
+            description: If true, enable posture checking
+            type: bool
+          RunSSHServer:
+            description: If true, enable tailscale ssh
+            type: bool
+          RunWebClient:
+            description: If true, enable tailscale web client
+            type: bool
+          ShieldsUp:
+            description: If true, don't allow incoming connections
+            type: bool
+          AutoUpdate:
+            description: Autoupdate preferences for tailscale
+            type: dict
+            options:
+              Check:
+                description: |
+                  If true, tailscale will periodically check for
+                  available updates and notify the user about them
+                type: bool
+              Apply:
+                description: |
+                  If true, tailscale will apply available updates in the background.
+                  Check must always be set when Apply is set.
+                type: bool
+
+      tailscale_serve:
+        description: Tailscale serve configuration
+        type: list
+        elements: dict
+        options:
+          from:
+            description: |
+              The port that will be opened on the tailscale network which will
+              serve up access to a local service
+            type: dict
+            required: true
+            options:
+              proto:
+                description: Network protocol
+                type: str
+                required: true
+                choices:
+                  - http
+                  - https
+                  - tcp
+                  - tls-terminated-tcp
+              port:
+                description: Network port
+                type: int
+                required: true
+              path:
+                description: |
+                  HTTP/HTTPS path to serve from.
+                  Must not be set when protocol is tcp or tls-terminated-tcp.
+                type: str
+                default: "/"
+          to:
+            description:
+              - |
+                The local target to serve onto the tailscale network.
+                This can be a file or directory, static text, or a network service.
+              - |
+                File server
+                Provide a full, absolute path to the file or directory of files you wish to serve.
+                If a directory is specified, this will render a simple directory listing with links
+                to files and sub-directories.
+              - |
+                Static text server
+                Specifying text:<value> configures a simple static plain-text server.
+              - |
+                Reverse proxy
+                The location to the local service can be expressed as a port number
+                (for example, 3000), a partial URL (for example, localhost:3000),
+                or a full URL including a path (
+                for example, tcp://localhost:3000/foo, https+insecure://localhost:3000/foo).
+            type: str
+            required: true
+          funnel:
+            description: |
+              If true, allow Internet to access the served port using tailscale funnel.
+              Must not be true if the from protocol is set to http.
+            type: bool
+            default: false
+
+      tailscale_serve_delete_unmanaged:
+        description: |
+          If true, delete any tailscale serve instances that are currently running
+          but not configured by this ansible role.
+        type: bool
+        default: true

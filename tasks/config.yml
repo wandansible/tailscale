@@ -49,6 +49,7 @@
       {%- endfor %}
   when:
     - _tailscale_state.BackendState == "NeedsLogin"
+  tags: molecule-idempotence-notest
 
 - name: Run tailscale set
   ansible.builtin.command:

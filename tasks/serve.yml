@@ -11,7 +11,7 @@
 
 - name: Set tailscale serve port facts
   ansible.builtin.set_fact:
-    _tailscale_serve_active_ports: "{{ _tailscale_serve_state.TCP | list }}"
+    _tailscale_serve_active_ports: "{{ _tailscale_serve_state.TCP | default([]) | list }}"
     _tailscale_serve_configured_ports: >-
       {{ tailscale_serve | map(attribute='from.port') | list | map("string") }}
 
@@ -42,7 +42,7 @@
     cmd: "tailscale {{ _tailscale_serve_cmd }} --yes --bg {{ _tailscale_serve_args }}"
   vars:
     _tailscale_serve_cmd: >-
-      {{ "funnel" if item.funnel | bool else "serve" }}
+      {{ "funnel" if item.funnel | default(False) | bool else "serve" }}
     _tailscale_serve_from: >-
       {{ item.from.proto + "://" + tailscale_fqdn + ":" + (item.from.port | string)
          + (item.from.path | default("/")) }}
