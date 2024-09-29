@@ -49,9 +49,18 @@
 
     - name: Prompt user to authenticate with tailscale in web browser
       ansible.builtin.pause:
-        prompt: |-
+        seconds: 1
+        prompt: |
           To authenticate {{ inventory_hostname }} with tailscale, visit:
 
               {{ _tailscale_state.AuthURL }}
 
-          Press enter to continue
+    - name: Wait for device to be authenticated and approved
+      ansible.builtin.command:
+        cmd: "tailscale status --peers=false --json"
+      register: _tailscale_status_cmd
+      retries: 30
+      delay: 10
+      until: (_tailscale_status_cmd.stdout | from_json).BackendState == "Running"
+      changed_when: false
+      tags: molecule-notest
