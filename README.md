@@ -6,7 +6,8 @@ Install, configure and authenticate a tailscale client with a tailscale network.
 Requirements
 ------------
 
-To use this role, the python package `netaddr` must be installed on the host running ansible.
+To use this role, the python packages `netaddr` and `jmespath` must be installed on the host
+running ansible.
 
 Role Variables
 --------------
@@ -169,8 +170,9 @@ Options (= indicates it is required):
             type: dict
             options:
 
-            - path              HTTP/HTTPS path to serve from. Must not be set when
-                     protocol is tcp or tls-terminated-tcp.
+            - path              HTTP/HTTPS path to serve from. Must start with "/". Must
+                     not be set when protocol is tcp or
+                     tls-terminated-tcp.
               default: /
               type: str
 
