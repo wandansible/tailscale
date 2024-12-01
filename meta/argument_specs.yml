@@ -244,28 +244,29 @@ argument_specs:
               path:
                 description: |
                   HTTP/HTTPS path to serve from.
+                  Must start with "/".
                   Must not be set when protocol is tcp or tls-terminated-tcp.
                 type: str
                 default: "/"
           to:
             description:
               - |
-                The local target to serve onto the tailscale network.
-                This can be a file or directory, static text, or a network service.
+                  The local target to serve onto the tailscale network.
+                  This can be a file or directory, static text, or a network service.
               - |
-                File server
-                Provide a full, absolute path to the file or directory of files you wish to serve.
-                If a directory is specified, this will render a simple directory listing with links
-                to files and sub-directories.
+                  File server
+                  Provide a full, absolute path to the file or directory of files you wish to serve.
+                  If a directory is specified, this will render a simple directory listing with links
+                  to files and sub-directories.
               - |
-                Static text server
-                Specifying text:<value> configures a simple static plain-text server.
+                  Static text server
+                  Specifying text:<value> configures a simple static plain-text server.
               - |
-                Reverse proxy
-                The location to the local service can be expressed as a port number
-                (for example, 3000), a partial URL (for example, localhost:3000),
-                or a full URL including a path (
-                for example, tcp://localhost:3000/foo, https+insecure://localhost:3000/foo).
+                  Reverse proxy
+                  The location to the local service can be expressed as a port number
+                  (for example, 3000), a partial URL (for example, localhost:3000),
+                  or a full URL including a path (
+                  for example, tcp://localhost:3000/foo, https+insecure://localhost:3000/foo).
             type: str
             required: true
           funnel:
