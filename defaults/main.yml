@@ -36,7 +36,6 @@ tailscale_valid_args:
   - exit-node-allow-lan-access
   - hostname
   - netfilter-mode
-  - nickname
   - operator
   - shields-up
   - snat-subnet-routes
@@ -48,6 +47,7 @@ tailscale_valid_login_args:
 tailscale_valid_set_args:
   - accept-risk
   - auto-update
+  - nickname
   - update-check
   - webclient
 
