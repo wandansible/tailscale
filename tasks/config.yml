@@ -47,8 +47,15 @@
       --{{ item.option }}="{{ item.value }}"{{ " " if not loop.last else "" }}
         {%- endif %}
       {%- endfor %}
+    _configured_tags: >-
+      {{ tailscale_args
+         | selectattr("option", "equalto", "advertise-tags")
+         | map(attribute="value")
+         | map("split", ",")
+         | flatten }}
   when:
     - _tailscale_state.BackendState == "NeedsLogin"
+      or _tailscale_state.Self.Tags | default([]) | sort != _configured_tags | sort
   tags: molecule-idempotence-notest
 
 - name: Run tailscale set
