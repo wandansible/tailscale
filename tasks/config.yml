@@ -26,7 +26,7 @@
 
 - name: Configure /etc/default/tailscaled
   ansible.builtin.template:
-    src: "default"
+    src: "defaults"
     dest: "/etc/default/tailscaled"
     owner: "root"
     group: "root"
