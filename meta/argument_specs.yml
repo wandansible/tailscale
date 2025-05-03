@@ -5,24 +5,34 @@ argument_specs:
     description: |
       Install, configure and authenticate a tailscale client with a tailscale network.
     options:
-      tailscale_apt_key_fingerprint:
-        description: Fingerprint for tailscale apt repo GPG key
+      tailscale_apt_repo_url:
+        description: Base URL for the apt repository
         type: str
-        default: "2596A99EAAB33821893C0A79458CA832957F5868"
+        default: >-
+          {{
+            "https://pkgs.tailscale.com/" + tailscale_version + "/" + ansible_distribution | lower
+          }}
 
-      tailscale_apt_key_url:
-        description: URL for tailscale apt repo GPG key
+      tailscale_apt_repo_suite:
+        description: Suite to use for the apt repository
+        type: str
+        default: "{{ ansible_distribution_release }}"
+
+      tailscale_apt_repo_component:
+        description: Component to use for the apt repository
+        type: str
+        default: "main"
+
+      tailscale_apt_repo_gpg_key:
+        description: |
+          Either a URL to a GPG key, absolute path to a keyring file,
+          one or more fingerprints of keys either in the trusted.gpg
+          keyring or in the keyrings in the trusted.gpg.d/ directory,
+          or an ASCII armored GPG public key block
         type: str
         default: >-
           {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
              + ansible_distribution | lower + "/" + ansible_distribution_release + ".noarmor.gpg" }}
-
-      tailscale_apt_repo:
-        description: Entry for tailscale apt repo in sources.list file
-        type: str
-        default: >-
-          {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
-             + ansible_distribution | lower + " " + ansible_distribution_release + " main" }}
 
       tailscale_version:
         description: Version of tailscale to install

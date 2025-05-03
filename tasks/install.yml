@@ -1,30 +1,29 @@
 ---
-- name: Create apt keyrings directory
+- name: Install dependencies
+  ansible.builtin.apt:
+    pkg:
+      - "python3-debian"
+
+- name: Remove old tailscale apt configuration
   ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory
-    owner: root
-    group: root
-    mode: u=rwx,g=rx,o=rx
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/etc/apt/sources.list.d/tailscale.list"
 
-- name: Add apt signing key
-  ansible.builtin.apt_key:
-    id: "{{ tailscale_apt_key_fingerprint }}"
-    url: "{{ tailscale_apt_key_url }}"
-    keyring: /etc/apt/keyrings/tailscale.gpg
+- name: Add tailscale apt repository
+  ansible.builtin.deb822_repository:
+    name: tailscale
+    uris: "{{ tailscale_apt_repo_url }}"
+    suites: "{{ tailscale_apt_repo_suite }}"
+    components: "{{ tailscale_apt_repo_component }}"
+    signed_by: "{{ tailscale_apt_repo_gpg_key }}"
     state: present
-
-- name: Add apt repository
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [signed-by=/etc/apt/keyrings/tailscale.gpg]
-      {{ tailscale_apt_repo }}
-    filename: tailscale
-    update_cache: true
-    state: present
+  register: _apt_repo
 
 - name: Install tailscale
   ansible.builtin.apt:
     pkg: "{{ tailscale_packages }}"
     install_recommends: false
+    update_cache: "{{ true if _apt_repo is changed else false }}"
     state: present
