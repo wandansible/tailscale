@@ -20,18 +20,26 @@ ENTRY POINT: *main* - Install and configure tailscale
 
 Options (= indicates it is required):
 
-- tailscale_apt_key_fingerprint  Fingerprint for tailscale apt repo GPG key
-          default: 2596A99EAAB33821893C0A79458CA832957F5868
+- tailscale_apt_repo_component  Component to use for the apt repository
+          default: main
           type: str
 
-- tailscale_apt_key_url  URL for tailscale apt repo GPG key
+- tailscale_apt_repo_gpg_key  Either a URL to a GPG key, absolute path to a keyring file, one or
+                               more fingerprints of keys either in the
+                               trusted.gpg keyring or in the keyrings
+                               in the trusted.gpg.d/ directory, or an
+                               ASCII armored GPG public key block
           default: "{{ \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\"\n   + ansible_distribution
             | lower + \"/\" + ansible_distribution_release + \".noarmor.gpg\" }}"
           type: str
 
-- tailscale_apt_repo  Entry for tailscale apt repo in sources.list file
-          default: "{{ \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\"\n   + ansible_distribution
-            | lower + \" \" + ansible_distribution_release + \" main\" }}"
+- tailscale_apt_repo_suite  Suite to use for the apt repository
+          default: '{{ ansible_distribution_release }}'
+          type: str
+
+- tailscale_apt_repo_url  Base URL for the apt repository
+          default: "{{\n  \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\" + ansible_distribution
+            | lower\n}}"
           type: str
 
 - tailscale_args  List of arguments to provide to tailscale login and set commands

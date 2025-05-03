@@ -1,11 +1,11 @@
 ---
-tailscale_apt_key_fingerprint: "2596A99EAAB33821893C0A79458CA832957F5868"
-tailscale_apt_key_url: >-
+tailscale_apt_repo_url: >-
+  {{ "https://pkgs.tailscale.com/" + tailscale_version + "/" + ansible_distribution | lower }}
+tailscale_apt_repo_suite: "{{ ansible_distribution_release }}"
+tailscale_apt_repo_component: "main"
+tailscale_apt_repo_gpg_key: >-
   {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
      + ansible_distribution | lower + "/" + ansible_distribution_release + ".noarmor.gpg" }}
-tailscale_apt_repo: >-
-  {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
-     + ansible_distribution | lower + " " + ansible_distribution_release + " main" }}
 
 tailscale_version: "stable"
 
