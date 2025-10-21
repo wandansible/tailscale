@@ -55,7 +55,7 @@
               {{ hostvars[item]["_tailscale_state"].AuthURL }}
 
           Press enter to continue
-      loop: "{{ play_hosts }}"
+      loop: "{{ ansible_play_batch }}"
 
     - name: Wait for device to be authenticated and approved
       ansible.builtin.command:
