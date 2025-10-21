@@ -13,6 +13,8 @@
             Check: true
             Apply: true
 
+        tailscale_login_timeout: 15s
+
         tailscale_args:
           - option: "advertise-tags"
             value: "tag:web-server,tag:ssh-server"
