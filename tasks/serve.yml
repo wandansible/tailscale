@@ -4,6 +4,7 @@
     cmd: "tailscale serve status --json"
   register: _tailscale_serve_status_cmd
   changed_when: false
+  check_mode: false
 
 - name: Delete unmanaged tailscale serve HTTP paths
   ansible.builtin.command:
@@ -42,6 +43,7 @@
     cmd: "tailscale serve status --json"
   register: _tailscale_serve_status_cmd
   changed_when: false
+  check_mode: false
 
 - name: Delete unmanaged tailscale serve ports
   ansible.builtin.command:
