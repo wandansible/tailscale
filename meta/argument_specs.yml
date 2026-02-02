@@ -10,13 +10,13 @@ argument_specs:
         type: str
         default: >-
           {{
-            "https://pkgs.tailscale.com/" + tailscale_version + "/" + ansible_distribution | lower
+            "https://pkgs.tailscale.com/" + tailscale_version + "/" + ansible_facts.distribution | lower
           }}
 
       tailscale_apt_repo_suite:
         description: Suite to use for the apt repository
         type: str
-        default: "{{ ansible_distribution_release }}"
+        default: "{{ ansible_facts.distribution_release }}"
 
       tailscale_apt_repo_component:
         description: Component to use for the apt repository
@@ -32,7 +32,7 @@ argument_specs:
         type: str
         default: >-
           {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
-             + ansible_distribution | lower + "/" + ansible_distribution_release + ".noarmor.gpg" }}
+             + ansible_facts.distribution | lower + "/" + ansible_facts.distribution_release + ".noarmor.gpg" }}
 
       tailscale_version:
         description: Version of tailscale to install
