@@ -31,16 +31,16 @@ Options (= indicates it is required):
                                trusted.gpg keyring or in the keyrings
                                in the trusted.gpg.d/ directory, or an
                                ASCII armored GPG public key block
-          default: "{{ \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\"\n   + ansible_distribution
-            | lower + \"/\" + ansible_distribution_release + \".noarmor.gpg\" }}"
+          default: "{{ \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\"\n   + ansible_facts.distribution
+            | lower + \"/\" + ansible_facts.distribution_release + \".noarmor.gpg\" }}"
           type: str
 
 - tailscale_apt_repo_suite  Suite to use for the apt repository
-          default: '{{ ansible_distribution_release }}'
+          default: '{{ ansible_facts.distribution_release }}'
           type: str
 
 - tailscale_apt_repo_url  Base URL for the apt repository
-          default: "{{\n  \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\" + ansible_distribution
+          default: "{{\n  \"https://pkgs.tailscale.com/\" + tailscale_version + \"/\" + ansible_facts.distribution
             | lower\n}}"
           type: str
 

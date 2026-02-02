@@ -1,11 +1,11 @@
 ---
 tailscale_apt_repo_url: >-
-  {{ "https://pkgs.tailscale.com/" + tailscale_version + "/" + ansible_distribution | lower }}
-tailscale_apt_repo_suite: "{{ ansible_distribution_release }}"
+  {{ "https://pkgs.tailscale.com/" + tailscale_version + "/" + ansible_facts.distribution | lower }}
+tailscale_apt_repo_suite: "{{ ansible_facts.distribution_release }}"
 tailscale_apt_repo_component: "main"
 tailscale_apt_repo_gpg_key: >-
   {{ "https://pkgs.tailscale.com/" + tailscale_version + "/"
-     + ansible_distribution | lower + "/" + ansible_distribution_release + ".noarmor.gpg" }}
+     + ansible_facts.distribution | lower + "/" + ansible_facts.distribution_release + ".noarmor.gpg" }}
 
 tailscale_version: "stable"
 
