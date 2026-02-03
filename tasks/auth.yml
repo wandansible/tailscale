@@ -52,7 +52,7 @@
         prompt: |-
           To authenticate {{ item }} with tailscale, visit:
 
-              {{ hostvars[item]["_tailscale_state"].AuthURL }}
+              {{ hostvars[item]._tailscale_state.AuthURL }}
 
           Press enter to continue
       loop: "{{ ansible_play_batch }}"
