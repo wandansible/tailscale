@@ -41,6 +41,22 @@
               {{ _tailscale_login_args }}
           register: _tailscale_login_cmd
           changed_when: true
+          failed_when: false
+
+        - debug:
+            var: "_tailscale_login_cmd"
+
+        - ansible.builtin.command:
+            cmd: tailscale status
+          register: _tailscale_status
+          changed_when: true
+          failed_when: false
+
+        - debug:
+            var: "_tailscale_status"
+
+        - debug:
+            msg: "test"
           failed_when: "'To authenticate' not in _tailscale_login_cmd.stderr"
 
         - name: Get tailscale status
